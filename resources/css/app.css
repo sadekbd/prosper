@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4,h5,h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-pm-cyan text-white font-semibold
+           px-6 py-3 rounded-lg hover:bg-cyan-500 transition-all duration-300
+           hover:shadow-lg hover:shadow-cyan-500/25 active:scale-95 cursor-pointer;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 border-2 border-white text-white
+           font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-pm-navy
+           transition-all duration-300 active:scale-95;
+  }
+  .btn-outline {
+    @apply inline-flex items-center gap-2 border-2 border-pm-cyan text-pm-cyan
+           font-semibold px-6 py-3 rounded-lg hover:bg-pm-cyan hover:text-white
+           transition-all duration-300 active:scale-95;
+  }
+  .btn-gold {
+    @apply inline-flex items-center gap-2 bg-pm-gold text-pm-navy font-bold
+           px-6 py-3 rounded-lg hover:bg-yellow-400 transition-all duration-300
+           hover:shadow-lg hover:shadow-yellow-500/25 active:scale-95;
+  }
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6
+           hover:shadow-md transition-all duration-300;
+  }
+  .card-hover {
+    @apply card hover:-translate-y-1;
+  }
+  .section-padding {
+    @apply py-20 md:py-28;
+  }
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide;
+  }
+  .badge-gold  { @apply badge bg-yellow-50  text-yellow-700  border border-yellow-200; }
+  .badge-cyan  { @apply badge bg-cyan-50    text-cyan-700    border border-cyan-200; }
+  .badge-navy  { @apply badge bg-pm-navy    text-white; }
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-widest text-pm-cyan;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl lg:text-5xl font-extrabold text-pm-navy leading-tight;
+  }
+  .section-title-white {
+    @apply text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight;
+  }
+  .input-field {
+    @apply w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-pm-slate
+           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pm-cyan/30
+           focus:border-pm-cyan transition-all duration-200 text-sm;
+  }
+  .input-error  { @apply border-red-400 focus:ring-red-200 focus:border-red-400; }
+  .form-label   { @apply block text-sm font-semibold text-pm-navy mb-2; }
+  .error-msg    { @apply text-red-500 text-xs mt-1.5 flex items-center gap-1; }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #00B4D8 0%, #FFB703 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-hero-gradient {
+    background: linear-gradient(135deg, #0B132B 0%, #0d1f3c 60%, #0a1628 100%);
+  }
+  .bg-cta-gradient {
+    background: linear-gradient(135deg, #0B132B 0%, #0d2137 100%);
+  }
+  .grid-overlay {
+    background-image:
+      linear-gradient(rgba(0,180,216,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,216,0.06) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .dot-overlay {
+    background-image: radial-gradient(circle, rgba(0,180,216,0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .glow-cyan { box-shadow: 0 0 40px rgba(0,180,216,0.2); }
+  .glow-gold { box-shadow: 0 0 40px rgba(255,183,3,0.2);  }
+}
+/* Alpine.js: hide elements with x-cloak until Alpine initialises */
+[x-cloak] { display: none !important; }
