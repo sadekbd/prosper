@@ -1,2 +1,17 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Block admin panel from crawlers
+Disallow: /admin/
+Disallow: /admin/*
+
+# Block internal Laravel paths
+Disallow: /_ignition/
+Disallow: /telescope/
+Disallow: /horizon/
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# Crawl delay for well-behaved bots
+Crawl-delay: 10

@@ -11,8 +11,13 @@ class SiteSettingController extends Controller
 {
     public function index()
     {
-        $settings = SiteSetting::orderBy('group')->orderBy('id')->get()->groupBy('group');
-        return view('admin.settings.index', compact('settings'));
+        
+        $settingGroups = SiteSetting::orderBy('group')
+                                    ->orderBy('id')
+                                    ->get()
+                                    ->groupBy('group');
+
+        return view('admin.settings.index', compact('settingGroups'));
     }
 
     public function update(Request $request)
@@ -23,20 +28,20 @@ class SiteSettingController extends Controller
             $setting = SiteSetting::where('key', $key)->first();
             if (!$setting) continue;
 
-            // Handle image upload
             if ($setting->type === 'image' && $request->hasFile($key)) {
                 if ($setting->value) {
                     Storage::disk('public')->delete($setting->value);
                 }
                 $value = $request->file($key)->store('uploads/settings', 'public');
             } elseif ($setting->type === 'image') {
-                continue; // no file uploaded — keep existing
+                continue; // no new file — keep existing image
             }
 
             $setting->update(['value' => $value]);
         }
 
         SiteSetting::clearCache();
+
         return back()->with('success', 'Settings saved successfully.');
     }
 }

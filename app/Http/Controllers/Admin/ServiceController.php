@@ -78,50 +78,51 @@ class ServiceController extends Controller
     }
 
     public function update(Request $request, int $id)
-    {
-        $service   = Service::findOrFail($id);
-        $validated = $request->validate([
-            'title'            => ['required','string','max:150'],
-            'subtitle'         => ['nullable','string','max:255'],
-            'description'      => ['required','string'],
-            'icon'             => ['nullable','string','max:100'],
-            'meta_title'       => ['nullable','string','max:200'],
-            'meta_description' => ['nullable','string','max:300'],
-            'sort_order'       => ['nullable','integer','min:0'],
-            'status'           => ['required','in:active,inactive'],
-            'features'         => ['nullable','array'],
-            'features.*'       => ['string','max:255'],
+{
+    $service   = Service::findOrFail($id);
+    $validated = $request->validate([
+        'title'            => ['required','string','max:150'],
+        'subtitle'         => ['nullable','string','max:255'],
+        'description'      => ['required','string'],
+        'icon'             => ['nullable','string','max:100'],
+        'meta_title'       => ['nullable','string','max:200'],
+        'meta_description' => ['nullable','string','max:300'],
+        'sort_order'       => ['nullable','integer','min:0'],
+        'status'           => ['required','in:active,inactive'],
+        'features'         => ['nullable','array'],
+        'features.*'       => ['string','max:255'],
+    ]);
+
+    DB::transaction(function () use ($service, $validated) {
+        // ── Use ?? null so missing optional fields don't crash ──
+        $service->update([
+            'title'            => $validated['title'],
+            'subtitle'         => $validated['subtitle']         ?? null,
+            'description'      => $validated['description'],
+            'icon'             => $validated['icon']             ?? null,
+            'meta_title'       => $validated['meta_title']       ?? null,
+            'meta_description' => $validated['meta_description'] ?? null,
+            'sort_order'       => $validated['sort_order']       ?? 0,
+            'status'           => $validated['status'],
         ]);
 
-        DB::transaction(function () use ($service, $validated) {
-            $service->update([
-                'title'            => $validated['title'],
-                'subtitle'         => $validated['subtitle'],
-                'description'      => $validated['description'],
-                'icon'             => $validated['icon'],
-                'meta_title'       => $validated['meta_title'],
-                'meta_description' => $validated['meta_description'],
-                'sort_order'       => $validated['sort_order'] ?? 0,
-                'status'           => $validated['status'],
-            ]);
-
-            // Replace all features
-            $service->features()->delete();
-            if (!empty($validated['features'])) {
-                foreach (array_filter($validated['features']) as $i => $feat) {
-                    ServiceFeature::create([
-                        'service_id' => $service->id,
-                        'feature'    => $feat,
-                        'sort_order' => $i + 1,
-                    ]);
-                }
+        // Replace all features
+        $service->features()->delete();
+        if (!empty($validated['features'])) {
+            foreach (array_filter($validated['features']) as $i => $feat) {
+                ServiceFeature::create([
+                    'service_id' => $service->id,
+                    'feature'    => $feat,
+                    'sort_order' => $i + 1,
+                ]);
             }
+        }
 
-            ActivityLog::log('updated_service', 'Service', $service->id);
-        });
+        ActivityLog::log('updated_service', 'Service', $service->id);
+    });
 
-        return redirect()->route('admin.services')->with('success', 'Service updated.');
-    }
+    return redirect()->route('admin.services')->with('success', 'Service updated.');
+}
 
     public function destroy(int $id)
     {

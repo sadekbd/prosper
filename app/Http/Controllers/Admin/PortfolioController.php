@@ -64,22 +64,22 @@ class PortfolioController extends Controller
         }
 
         PortfolioProject::create([
-            'title'             => $validated['title'],
-            'slug'              => $count ? "{$slug}-{$count}" : $slug,
-            'category'          => $validated['category'],
-            'short_description' => $validated['short_description'],
-            'full_description'  => $validated['full_description'],
-            'technologies'      => $technologies,
-            'result_summary'    => $validated['result_summary'],
-            'client_name'       => $validated['client_name'],
-            'project_url'       => $validated['project_url'],
-            'featured_image'    => $imagePath,
-            'meta_title'        => $validated['meta_title'],
-            'meta_description'  => $validated['meta_description'],
-            'is_featured'       => $request->boolean('is_featured'),
-            'sort_order'        => $validated['sort_order'] ?? 0,
-            'status'            => $validated['status'],
-        ]);
+    'title'             => $validated['title'],
+    'slug'              => $count ? "{$slug}-{$count}" : $slug,
+    'category'          => $validated['category'],
+    'short_description' => $validated['short_description'],
+    'full_description'  => $validated['full_description']  ?? null,
+    'technologies'      => $technologies,
+    'result_summary'    => $validated['result_summary']    ?? null,
+    'client_name'       => $validated['client_name']       ?? null,
+    'project_url'       => $validated['project_url']       ?? null,
+    'featured_image'    => $imagePath,
+    'meta_title'        => $validated['meta_title']        ?? null,
+    'meta_description'  => $validated['meta_description']  ?? null,
+    'is_featured'       => $request->boolean('is_featured'),
+    'sort_order'        => $validated['sort_order']        ?? 0,
+    'status'            => $validated['status'],
+]);
 
         ActivityLog::log('created_project', 'PortfolioProject', null, "Created: {$validated['title']}");
         return redirect()->route('admin.portfolio')->with('success', 'Project created successfully.');
@@ -124,21 +124,21 @@ class PortfolioController extends Controller
         }
 
         $project->update([
-            'title'             => $validated['title'],
-            'category'          => $validated['category'],
-            'short_description' => $validated['short_description'],
-            'full_description'  => $validated['full_description'],
-            'technologies'      => $technologies,
-            'result_summary'    => $validated['result_summary'],
-            'client_name'       => $validated['client_name'],
-            'project_url'       => $validated['project_url'],
-            'featured_image'    => $validated['featured_image'] ?? $project->featured_image,
-            'meta_title'        => $validated['meta_title'],
-            'meta_description'  => $validated['meta_description'],
-            'is_featured'       => $request->boolean('is_featured'),
-            'sort_order'        => $validated['sort_order'] ?? $project->sort_order,
-            'status'            => $validated['status'],
-        ]);
+    'title'             => $validated['title'],
+    'category'          => $validated['category'],
+    'short_description' => $validated['short_description'],
+    'full_description'  => $validated['full_description']  ?? null,
+    'technologies'      => $technologies,
+    'result_summary'    => $validated['result_summary']    ?? null,
+    'client_name'       => $validated['client_name']       ?? null,
+    'project_url'       => $validated['project_url']       ?? null,
+    'featured_image'    => $validated['featured_image']    ?? $project->featured_image,
+    'meta_title'        => $validated['meta_title']        ?? null,
+    'meta_description'  => $validated['meta_description']  ?? null,
+    'is_featured'       => $request->boolean('is_featured'),
+    'sort_order'        => $validated['sort_order']        ?? $project->sort_order,
+    'status'            => $validated['status'],
+]);
 
         return redirect()->route('admin.portfolio')->with('success', 'Project updated.');
     }

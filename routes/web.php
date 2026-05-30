@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/',        [HomeController::class,     'index'])->name('home');
 Route::get('/about',   [AboutController::class,    'index'])->name('about');
 
+
 // Services
 Route::get('/services',        [ServicesController::class, 'index'])->name('services');
 Route::get('/services/{slug}', [ServicesController::class, 'show'])->name('services.show');
@@ -37,6 +38,9 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 
 // Static pages
 Route::get('/privacy-policy', fn() => view('public.privacy-policy'))->name('privacy-policy');
+
+// Add with the public routes
+Route::get('/sitemap.xml', [\App\Http\Controllers\Public\SitemapController::class, 'index'])->name('sitemap');
 
 // ── Admin routes ───────────────────────────────────────────────────
 require __DIR__.'/admin.php';

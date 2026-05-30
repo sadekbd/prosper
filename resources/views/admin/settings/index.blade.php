@@ -9,7 +9,7 @@
   @csrf
 
   <div class="space-y-6">
-    @foreach($settings as $group => $groupSettings)
+    @foreach($settingGroups as $group => $groupSettings)
       <div class="bg-[#1a2540] border border-white/5 rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-white/5">
           <h3 class="text-white font-bold capitalize">{{ $group }} Settings</h3>

@@ -102,4 +102,5 @@
   .glow-gold { box-shadow: 0 0 40px rgba(255,183,3,0.2);  }
 }
 /* Alpine.js: hide elements with x-cloak until Alpine initialises */
-[x-cloak] { display: none !important; }
+[x-cloak] { display: none !important; } 
+
