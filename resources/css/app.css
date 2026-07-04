@@ -104,3 +104,142 @@
 /* Alpine.js: hide elements with x-cloak until Alpine initialises */
 [x-cloak] { display: none !important; } 
 
+/* ═══════════════════════════════════════════════════════════════
+   DARK / NIGHT MODE — applied when <html class="dark">
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Body & base ─────────────────────────────────────────────── */
+.dark body {
+  background-color: #0a1020;
+  color: #e5e7eb;
+}
+
+/* ── Light section backgrounds → dark equivalents ─────────────── */
+.dark section.bg-white,
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark section.bg-pm-grey,
+.dark .bg-pm-grey,
+.dark .bg-\[#F8F9FA\] {
+  background-color: #0a1020 !important;
+}
+
+/* ── Cards ───────────────────────────────────────────────────── */
+.dark .card,
+.dark .card-hover {
+  background-color: #1a2540;
+  border-color: rgba(255, 255, 255, 0.07);
+  color: #e5e7eb;
+}
+
+.dark .card:hover,
+.dark .card-hover:hover {
+  background-color: #1e2d50;
+}
+
+/* ── Typography ──────────────────────────────────────────────── */
+.dark .section-title        { color: #f9fafb; }
+.dark .section-subtitle     { color: #9ca3af; }
+.dark h1, .dark h2,
+.dark h3, .dark h4,
+.dark h5, .dark h6          { color: #f3f4f6; }
+.dark p                     { color: #d1d5db; }
+.dark .text-pm-slate        { color: #e5e7eb !important; }
+.dark .text-pm-navy         { color: #f9fafb !important; }
+.dark .text-gray-500,
+.dark .text-gray-600        { color: #9ca3af !important; }
+.dark .text-gray-400        { color: #d1d5db !important; }
+
+/* ── Borders ─────────────────────────────────────────────────── */
+.dark .border-gray-100,
+.dark .border-gray-200      { border-color: rgba(255,255,255,0.08) !important; }
+
+/* ── Input fields ────────────────────────────────────────────── */
+.dark .input-field {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f3f4f6;
+}
+
+.dark .input-field::placeholder { color: rgba(255,255,255,0.25); }
+
+.dark .input-field:focus {
+  border-color: #00B4D8;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+}
+
+.dark select.input-field option {
+  background-color: #1a2540;
+  color: #f3f4f6;
+}
+
+/* ── Form labels ─────────────────────────────────────────────── */
+.dark .form-label           { color: #d1d5db; }
+
+/* ── Trust bar ───────────────────────────────────────────────── */
+.dark .border-y.border-gray-100,
+.dark .border-b.border-gray-100 {
+  border-color: rgba(255,255,255,0.06) !important;
+  background-color: #111827;
+}
+
+/* ── Blog article single — prose in dark ─────────────────────── */
+.dark .prose p,
+.dark .prose li,
+.dark .prose td           { color: #d1d5db; }
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4           { color: #f3f4f6; }
+.dark .prose a            { color: #00B4D8; }
+.dark .prose strong       { color: #f9fafb; }
+.dark .prose blockquote   { background-color: rgba(255,255,255,0.04); }
+.dark .prose table thead  { background-color: #1a2540; }
+.dark .prose tr           { border-color: rgba(255,255,255,0.06); }
+.dark .prose code         { background-color: #1a2540; color: #00B4D8; }
+
+/* ── Privacy policy sidebar ──────────────────────────────────── */
+.dark .bg-pm-grey.rounded-2xl {
+  background-color: #1a2540 !important;
+}
+
+/* ── Portfolio filter active bg ──────────────────────────────── */
+.dark button.bg-white.text-pm-slate {
+  background-color: #1a2540 !important;
+  color: #e5e7eb !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* ── Blog search/filter bar ──────────────────────────────────── */
+.dark .bg-white.border-b {
+  background-color: #111827 !important;
+}
+
+/* ── Table overrides for dark mode ───────────────────────────── */
+.dark table thead tr {
+  background-color: rgba(255,255,255,0.04);
+}
+
+.dark table td,
+.dark table th {
+  border-color: rgba(255,255,255,0.06);
+  color: #e5e7eb;
+}
+
+/* ── Smooth colour transitions ───────────────────────────────── */
+body,
+body *,
+body *::before,
+body *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+/* Exclude elements where transition causes visual glitches */
+.btn-primary, .btn-secondary, .btn-outline, .btn-gold,
+.animate-float, .animate-fade-in-up,
+[class*="transition-"], [class*="duration-"] {
+  /* Keep their own transitions, don't override */
+} 

@@ -6,6 +6,8 @@ export default {
     './resources/**/*.blade.php',
     './resources/**/*.js',
   ],
+  // ── Enable class-based dark mode ──────────────────────────────
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -28,15 +30,10 @@ export default {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%':      { transform: 'translateY(-10px)' },
         },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition:  '200% 0' },
-        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.7s ease-out forwards',
         'float':      'float 4s ease-in-out infinite',
-        'shimmer':    'shimmer 2s linear infinite',
       },
     },
   },

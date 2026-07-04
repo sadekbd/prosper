@@ -12,18 +12,28 @@
 
       {{-- ── Logo ── --}}
       <a href="{{ route('home') }}" class="flex items-center gap-3 group flex-shrink-0">
-        <div class="w-10 h-10 bg-pm-cyan rounded-xl flex items-center justify-center
-                    group-hover:scale-105 transition-transform duration-200 shadow-lg shadow-cyan-500/30">
-          <span class="text-white font-black text-xl font-heading leading-none">P</span>
-        </div>
-        <div class="leading-tight">
-          <div class="text-white font-extrabold text-lg font-heading tracking-tight leading-none">
-            Prosper<span class="text-pm-cyan">Media</span>
+
+        @if(!empty($settings['site_logo']))
+          {{-- Dynamic image logo from admin settings --}}
+          <img src="{{ Storage::url($settings['site_logo']) }}"
+               alt="{{ $settings['site_name'] ?? 'Prosper Media' }}"
+               class="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200">
+        @else
+          {{-- Fallback text logo --}}
+          <div class="w-10 h-10 bg-pm-cyan rounded-xl flex items-center justify-center
+                      group-hover:scale-105 transition-transform duration-200 shadow-lg shadow-cyan-500/30 flex-shrink-0">
+            <span class="text-white font-black text-xl font-heading leading-none">P</span>
           </div>
-          <div class="text-pm-gold text-[10px] font-semibold tracking-[0.2em] uppercase leading-none mt-0.5">
-            Be Optimistic
+          <div class="leading-tight">
+            <div class="text-white font-extrabold text-lg font-heading tracking-tight leading-none">
+              Prosper<span class="text-pm-cyan">Media</span>
+            </div>
+            <div class="text-pm-gold text-[10px] font-bold tracking-[0.2em] uppercase leading-none mt-0.5">
+              Be Optimistic
+            </div>
           </div>
-        </div>
+        @endif
+
       </a>
 
       {{-- ── Desktop Nav ── --}}
@@ -51,8 +61,28 @@
         @endforeach
       </nav>
 
-      {{-- ── CTA Button ── --}}
+      {{-- ── Right: CTA + Dark Mode Toggle ── --}}
       <div class="hidden lg:flex items-center gap-3">
+
+        {{-- Dark/Light Mode Toggle --}}
+        <button id="theme-toggle"
+                onclick="toggleTheme()"
+                title="Toggle dark/light mode"
+                class="p-2.5 text-gray-400 hover:text-white rounded-xl hover:bg-white/10
+                       transition-all duration-200 relative">
+          {{-- Sun icon — shown in dark mode --}}
+          <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          {{-- Moon icon — shown in light mode --}}
+          <svg id="icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+
+        {{-- CTA --}}
         <a href="{{ route('contact') }}" class="btn-primary text-sm py-2.5 px-5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -62,17 +92,33 @@
         </a>
       </div>
 
-      {{-- ── Mobile Burger ── --}}
-      <button @click="open = !open"
-              class="lg:hidden p-2 text-white rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Toggle navigation">
-        <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-        <svg x-show="open" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      {{-- ── Mobile: toggle + burger ── --}}
+      <div class="lg:hidden flex items-center gap-2">
+        {{-- Mobile dark mode toggle --}}
+        <button onclick="toggleTheme()"
+                class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+          <svg id="icon-sun-mob" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <svg id="icon-moon-mob" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+
+        {{-- Hamburger --}}
+        <button @click="open = !open"
+                class="p-2 text-white rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="Toggle navigation">
+          <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <svg x-show="open" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
 
     </div>
   </div>
@@ -83,7 +129,6 @@
        x-transition:enter-start="opacity-0 -translate-y-3"
        x-transition:enter-end="opacity-100 translate-y-0"
        x-transition:leave="transition ease-in duration-150"
-       x-transition:leave-start="opacity-100 translate-y-0"
        x-transition:leave-end="opacity-0 -translate-y-3"
        class="lg:hidden bg-[#0a1628] border-t border-white/10">
     <div class="container-custom py-6 flex flex-col gap-1">

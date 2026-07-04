@@ -4,23 +4,35 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
       {{-- Brand --}}
-      <div>
-        <a href="{{ route('home') }}" class="flex items-center gap-3 mb-6 group">
-          <div class="w-11 h-11 bg-pm-cyan rounded-xl flex items-center justify-center">
-            <span class="text-white font-black text-xl font-heading">P</span>
-          </div>
-          <div>
-            <div class="text-white font-extrabold text-lg font-heading">
-              Prosper<span class="text-pm-cyan">Media</span>
-            </div>
-            <div class="text-pm-gold text-[10px] font-semibold tracking-widest uppercase">Be Optimistic</div>
-          </div>
-        </a>
+<div>
+  <a href="{{ route('home') }}" class="flex items-center gap-3 mb-6 group">
 
-        <p class="text-sm text-gray-400 leading-relaxed mb-6 max-w-xs">
-          Tech-first AI automation, digital marketing and web development agency.
-          Engineering your digital success with technical precision.
-        </p>
+    @if(!empty($settings['site_logo']))
+      {{-- Dynamic image logo from admin settings --}}
+      <img src="{{ Storage::url($settings['site_logo']) }}"
+           alt="{{ $settings['site_name'] ?? 'Prosper Media' }}"
+           class="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200">
+    @else
+      {{-- Fallback: text logo --}}
+      <div class="w-11 h-11 bg-pm-cyan rounded-xl flex items-center justify-center flex-shrink-0">
+        <span class="text-white font-black text-xl font-heading">P</span>
+      </div>
+      <div>
+        <div class="text-white font-extrabold text-lg font-heading">
+          Prosper<span class="text-pm-cyan">Media</span>
+        </div>
+        <div class="text-pm-gold text-[10px] font-semibold tracking-widest uppercase">Be Optimistic</div>
+      </div>
+    @endif
+
+  </a>
+
+  <p class="text-sm text-gray-400 leading-relaxed mb-6 max-w-xs">
+    Tech-first AI automation, digital marketing and web development agency.
+    Engineering your digital success with technical precision.
+  </p>
+
+  {{-- social links --}}
 
         <div class="flex gap-2">
           @php

@@ -4,12 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'Dashboard') — Prosper Media Admin</title>
+  <title>@yield('title', 'Dashboard') — {{ $settings['site_name'] ?? 'Prosper Media' }} Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  {{-- Dynamic favicon from site settings --}}
+
+@if(!empty($settings['favicon']))
+  <link rel="icon" type="image/x-icon" href="{{ Storage::url($settings['favicon']) }}">
+@else
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2300B4D8'/><text y='.9em' font-size='70' x='15' fill='white' font-weight='900'>P</text></svg>">
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+@endif
+
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-body bg-[#0f1623] antialiased"
       x-data="{ sidebarOpen: window.innerWidth >= 1024 }"

@@ -6,15 +6,30 @@
               transform transition-transform duration-300 ease-in-out overflow-y-auto">
 
   {{-- Logo --}}
-  <div class="flex items-center gap-3 px-6 py-5 border-b border-white/5 flex-shrink-0">
-    <div class="w-9 h-9 bg-pm-cyan rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
+<div class="flex items-center gap-3 px-6 py-5 border-b border-white/5 flex-shrink-0">
+
+  @if(!empty($settings['site_logo']))
+    {{-- Image logo from settings --}}
+    <a href="{{ route('admin.dashboard') }}" class="flex items-center">
+      <img src="{{ Storage::url($settings['site_logo']) }}"
+           alt="{{ $settings['site_name'] ?? 'Prosper Media' }}"
+           class="h-9 w-auto object-contain">
+    </a>
+  @else
+    {{-- Fallback text logo --}}
+    <div class="w-9 h-9 bg-pm-cyan rounded-lg flex items-center justify-center
+                shadow-lg shadow-cyan-500/20 flex-shrink-0">
       <span class="text-white font-black font-heading">P</span>
     </div>
     <div class="leading-tight">
-      <div class="text-white font-extrabold text-sm font-heading">Prosper<span class="text-pm-cyan">Media</span></div>
+      <div class="text-white font-extrabold text-sm font-heading">
+        Prosper<span class="text-pm-cyan">Media</span>
+      </div>
       <div class="text-pm-gold text-[9px] font-bold tracking-widest uppercase">Admin Panel</div>
     </div>
-  </div>
+  @endif
+
+</div>
 
   {{-- User info --}}
   <div class="px-4 py-4 border-b border-white/5 flex-shrink-0">
