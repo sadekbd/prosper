@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\NewsletterController;
+use App\Http\Controllers\Admin\HomepageController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -33,6 +34,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Homepage content (admin+)
+        Route::middleware('admin.admin')->prefix('homepage')->group(function () {
+            Route::get('/', [HomepageController::class, 'edit'])->name('homepage.edit');
+            Route::put('/', [HomepageController::class, 'update'])->name('homepage.update');
+        });
 
         // Blog Articles (all roles)
         Route::prefix('blog/articles')->group(function () {

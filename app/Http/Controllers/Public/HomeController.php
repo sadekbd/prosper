@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\PortfolioProject;
 use App\Models\BlogArticle;
+use App\Models\PageSection;
 use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $homeSections = PageSection::query()
+            ->active()
+            ->forPage('home')
+            ->ordered()
+            ->get()
+            ->keyBy('section_key');
+
         // Services — always safe (table exists from Phase 1)
         $services = Service::active()->take(3)->get();
 
@@ -34,6 +42,6 @@ class HomeController extends Controller
                 ->get();
         }
 
-        return view('public.home', compact('services', 'portfolios', 'articles'));
+        return view('public.home', compact('services', 'portfolios', 'articles', 'homeSections'));
     }
 }
