@@ -211,6 +211,55 @@ class HomepageDirtyUpdateTest extends TestCase
         $this->assertSame(0, DB::table('activity_logs')->count());
     }
 
+    public function test_mysql_loaded_repeated_payload_representation_does_not_create_false_dirty_updates(): void
+    {
+        $this->seed(HomePageSectionSeeder::class);
+        $this->applyMysqlRepeatedPayloadRepresentation();
+        $this->setSectionTimestamps('2026-01-01 00:00:00');
+
+        $before = $this->sectionSnapshot();
+
+        Carbon::setTestNow('2026-01-01 00:10:00');
+
+        $this->actingAs($this->adminUser(), 'admin')
+            ->put(route('admin.homepage.update'), $this->validPayload([
+                'hero.eyebrow' => 'Be Optimistic Test',
+            ]))
+            ->assertRedirect(route('admin.homepage.edit'))
+            ->assertSessionHas('success', 'Homepage content updated successfully.');
+
+        $after = $this->sectionSnapshot();
+
+        $this->assertSame('Be Optimistic Test', PageSection::where('section_key', 'hero')->value('eyebrow'));
+        $this->assertNotSame($before['hero']['updated_at'], $after['hero']['updated_at']);
+
+        foreach (['stats', 'trust_bar', 'difference', 'services_intro', 'primary_cta'] as $sectionKey) {
+            $this->assertSame($before[$sectionKey], $after[$sectionKey], "{$sectionKey} should not be touched by equivalent MySQL payloads.");
+        }
+
+        $this->assertSame(1, DB::table('activity_logs')->where('action', 'updated_homepage_sections')->count());
+    }
+
+    public function test_meaningful_zero_values_are_preserved_and_numeric_changes_are_not_hidden(): void
+    {
+        $this->seed(HomePageSectionSeeder::class);
+        $this->setSectionTimestamps('2026-01-01 00:00:00');
+
+        Carbon::setTestNow('2026-01-01 00:10:00');
+
+        $this->actingAs($this->adminUser(), 'admin')
+            ->put(route('admin.homepage.update'), $this->validPayload([
+                'stats.items.0.value' => '0',
+            ]))
+            ->assertRedirect(route('admin.homepage.edit'))
+            ->assertSessionHas('success', 'Homepage content updated successfully.');
+
+        $stats = PageSection::where('section_key', 'stats')->firstOrFail();
+
+        $this->assertSame('0', $stats->payload['items'][0]['value']);
+        $this->assertSame(1, DB::table('activity_logs')->where('action', 'updated_homepage_sections')->count());
+    }
+
     /**
      * @param array<string, mixed> $overrides
      * @return array<string, mixed>
@@ -381,6 +430,91 @@ class HomepageDirtyUpdateTest extends TestCase
             'created_at' => $timestamp,
             'updated_at' => $timestamp,
         ]);
+    }
+
+    private function applyMysqlRepeatedPayloadRepresentation(): void
+    {
+        PageSection::where('section_key', 'stats')->firstOrFail()->forceFill([
+            'payload' => [
+                'items' => [
+                    ['sep' => null, 'label' => 'Client Satisfaction', 'value' => '98', 'suffix' => '%'],
+                    ['sep' => null, 'label' => 'Average ROAS', 'value' => '5', 'suffix' => 'x'],
+                    ['sep' => null, 'label' => 'Projects Done', 'value' => '150', 'suffix' => '+'],
+                    ['sep' => 'yr', 'label' => 'Experience', 'value' => '3', 'suffix' => '+'],
+                ],
+            ],
+        ])->save();
+
+        PageSection::where('section_key', 'trust_bar')->firstOrFail()->forceFill([
+            'payload' => [
+                'items' => [
+                    ['color' => '#777BB4', 'label' => 'PHP 8'],
+                    ['color' => '#E37400', 'label' => 'Analytics GA4'],
+                    ['color' => '#4285F4', 'label' => 'Google Ads'],
+                    ['color' => '#F57C00', 'label' => 'Tag Manager'],
+                    ['color' => '#FF2D20', 'label' => 'Laravel'],
+                    ['color' => '#1877F2', 'label' => 'Meta Pixel'],
+                    ['color' => '#4479A1', 'label' => 'MySQL'],
+                ],
+            ],
+        ])->save();
+
+        PageSection::where('section_key', 'difference')->firstOrFail()->forceFill([
+            'payload' => [
+                'cards' => [
+                    [
+                        'body' => "Clear reporting, measurable results, and honest technical support. You always know exactly what is happening with your campaigns and why it's working.",
+                        'badge' => 'No. 03',
+                        'color' => 'cyan',
+                        'title' => 'Transparent Data',
+                        'icon_path' => 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+                    ],
+                    [
+                        'body' => 'Every click is treated as an investment, not an expense. We obsess over ROAS, CPA, and conversion rates â€” building campaigns that compound in profitability over time.',
+                        'badge' => 'No. 02',
+                        'color' => 'gold',
+                        'title' => 'ROI Focused',
+                        'icon_path' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+                    ],
+                    [
+                        'body' => 'We code the tracking setup that other agencies miss. Every pixel, every event, every conversion â€” captured with precision using GTM, server-side tracking, and custom API integrations.',
+                        'badge' => 'No. 01',
+                        'color' => 'cyan',
+                        'title' => 'Tech-First Marketing',
+                        'icon_path' => 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
+                    ],
+                ],
+            ],
+        ])->save();
+
+        PageSection::where('section_key', 'services_intro')->firstOrFail()->forceFill([
+            'payload' => [
+                'card_icons' => [
+                    'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z',
+                    'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+                    'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
+                ],
+                'card_link_label' => 'Learn More',
+            ],
+        ])->save();
+
+        PageSection::where('section_key', 'primary_cta')->firstOrFail()->forceFill([
+            'title' => "Be Optimistic.\nReady to scale your business?",
+            'payload' => [
+                'title_lines' => ['Be Optimistic.', 'Ready to scale your business?'],
+                'proof_points' => [
+                    'No Long-Term Contracts',
+                    'Free Audit Consultation',
+                    'ROI-Focused Approach',
+                    '100% Transparent Reporting',
+                ],
+                'secondary_button' => [
+                    'url' => '/portfolio',
+                    'label' => 'See Our Work',
+                    'route' => 'portfolio',
+                ],
+            ],
+        ])->save();
     }
 
     private function routeNameForUrl(?string $url, string $fallback): string
