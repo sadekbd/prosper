@@ -154,14 +154,14 @@ class UpdateHomepageRequest extends FormRequest
             'hero' => [
                 'section_key' => 'hero',
                 'eyebrow' => $validated['hero']['eyebrow'],
-                'title' => implode(' ', $validated['hero']['title_lines']),
+                'title' => implode(' ', $this->orderedList($validated['hero']['title_lines'])),
                 'subtitle' => $validated['hero']['subtitle'],
                 'body' => null,
                 'button_label' => $validated['hero']['primary_label'],
                 'button_url' => $this->urlValue($validated['hero']['primary_route'] ?? null, $validated['hero']['primary_url'] ?? null, 'services'),
                 'image' => null,
                 'payload' => [
-                    'title_lines' => array_values($validated['hero']['title_lines']),
+                    'title_lines' => $this->orderedList($validated['hero']['title_lines']),
                     'secondary_button' => [
                         'label' => $validated['hero']['secondary_button']['label'],
                         'url' => $this->urlValue($validated['hero']['secondary_button']['route'] ?? null, $validated['hero']['secondary_button']['url'] ?? null, 'contact'),
@@ -171,22 +171,22 @@ class UpdateHomepageRequest extends FormRequest
                         'eyebrow' => $validated['hero']['dashboard']['eyebrow'],
                         'title' => $validated['hero']['dashboard']['title'],
                         'status' => $validated['hero']['dashboard']['status'],
-                        'metrics' => array_values($validated['hero']['dashboard']['metrics']),
+                        'metrics' => $this->orderedList($validated['hero']['dashboard']['metrics']),
                         'chart' => [
                             'label' => $validated['hero']['dashboard']['chart']['label'],
-                            'days' => array_values($validated['hero']['dashboard']['chart']['days']),
-                            'bar_heights' => array_map('intval', array_values($validated['hero']['dashboard']['chart']['bar_heights'])),
+                            'days' => $this->orderedList($validated['hero']['dashboard']['chart']['days']),
+                            'bar_heights' => array_map('intval', $this->orderedList($validated['hero']['dashboard']['chart']['bar_heights'])),
                         ],
                         'tracking' => [
                             'label' => $validated['hero']['dashboard']['tracking']['label'],
-                            'items' => array_values($validated['hero']['dashboard']['tracking']['items']),
+                            'items' => $this->orderedList($validated['hero']['dashboard']['tracking']['items']),
                         ],
                         'floating_badges' => array_values(array_map(function (array $badge): array {
                             return array_filter([
                                 'label' => $badge['label'],
                                 'value' => $badge['value'] ?? null,
                             ], fn ($value) => $value !== null && $value !== '');
-                        }, $validated['hero']['dashboard']['floating_badges'])),
+                        }, $this->orderedList($validated['hero']['dashboard']['floating_badges']))),
                     ],
                 ],
                 'sort_order' => 10,
@@ -200,7 +200,7 @@ class UpdateHomepageRequest extends FormRequest
                 'button_label' => null,
                 'button_url' => null,
                 'image' => null,
-                'payload' => ['items' => array_values($validated['stats']['items'])],
+                'payload' => ['items' => $this->orderedList($validated['stats']['items'])],
                 'sort_order' => 20,
             ],
             'trust_bar' => [
@@ -212,7 +212,7 @@ class UpdateHomepageRequest extends FormRequest
                 'button_label' => null,
                 'button_url' => null,
                 'image' => null,
-                'payload' => ['items' => array_values($validated['trust_bar']['items'])],
+                'payload' => ['items' => $this->orderedList($validated['trust_bar']['items'])],
                 'sort_order' => 30,
             ],
             'difference' => [
@@ -224,7 +224,7 @@ class UpdateHomepageRequest extends FormRequest
                 'button_label' => null,
                 'button_url' => null,
                 'image' => null,
-                'payload' => ['cards' => array_values($validated['difference']['cards'])],
+                'payload' => ['cards' => $this->orderedList($validated['difference']['cards'])],
                 'sort_order' => 40,
             ],
             'services_intro' => [
@@ -238,7 +238,7 @@ class UpdateHomepageRequest extends FormRequest
                 'image' => null,
                 'payload' => [
                     'card_link_label' => $validated['services_intro']['card_link_label'],
-                    'card_icons' => array_values($validated['services_intro']['card_icons']),
+                    'card_icons' => $this->orderedList($validated['services_intro']['card_icons']),
                 ],
                 'sort_order' => 50,
             ],
@@ -269,20 +269,20 @@ class UpdateHomepageRequest extends FormRequest
             'primary_cta' => [
                 'section_key' => 'primary_cta',
                 'eyebrow' => $validated['primary_cta']['eyebrow'],
-                'title' => implode("\n", $validated['primary_cta']['title_lines']),
+                'title' => implode("\n", $this->orderedList($validated['primary_cta']['title_lines'])),
                 'subtitle' => $validated['primary_cta']['subtitle'],
                 'body' => null,
                 'button_label' => $validated['primary_cta']['primary_label'],
                 'button_url' => $this->urlValue($validated['primary_cta']['primary_route'] ?? null, $validated['primary_cta']['primary_url'] ?? null, 'contact'),
                 'image' => null,
                 'payload' => [
-                    'title_lines' => array_values($validated['primary_cta']['title_lines']),
+                    'title_lines' => $this->orderedList($validated['primary_cta']['title_lines']),
                     'secondary_button' => [
                         'label' => $validated['primary_cta']['secondary_button']['label'],
                         'url' => $this->urlValue($validated['primary_cta']['secondary_button']['route'] ?? null, $validated['primary_cta']['secondary_button']['url'] ?? null, 'portfolio'),
                         'route' => $this->payloadRouteValue($validated['primary_cta']['secondary_button']['route'] ?? null),
                     ],
-                    'proof_points' => array_values($validated['primary_cta']['proof_points']),
+                    'proof_points' => $this->orderedList($validated['primary_cta']['proof_points']),
                 ],
                 'sort_order' => 80,
             ],
@@ -448,5 +448,16 @@ class UpdateHomepageRequest extends FormRequest
             'contact' => '/contact',
             default => '/services',
         };
+    }
+
+    /**
+     * @param array<int|string, mixed> $items
+     * @return array<int, mixed>
+     */
+    private function orderedList(array $items): array
+    {
+        ksort($items, SORT_NUMERIC);
+
+        return array_values($items);
     }
 }

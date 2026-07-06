@@ -240,6 +240,91 @@ class HomepageDirtyUpdateTest extends TestCase
         $this->assertSame(1, DB::table('activity_logs')->where('action', 'updated_homepage_sections')->count());
     }
 
+    public function test_out_of_order_form_payload_updates_only_the_materially_changed_section(): void
+    {
+        $this->seed(HomePageSectionSeeder::class);
+        $this->setSectionTimestamps('2026-01-01 00:00:00');
+
+        $before = $this->sectionSnapshot();
+        $payload = $this->outOfOrderRepeatedPayload($this->validPayload([
+            'hero.eyebrow' => 'Be Optimistic Test',
+        ]));
+
+        Carbon::setTestNow('2026-01-01 00:10:00');
+
+        $this->actingAs($this->adminUser(), 'admin')
+            ->put(route('admin.homepage.update'), $payload)
+            ->assertRedirect(route('admin.homepage.edit'))
+            ->assertSessionHas('success', 'Homepage content updated successfully.');
+
+        $after = $this->sectionSnapshot();
+
+        $this->assertSame('Be Optimistic Test', PageSection::where('section_key', 'hero')->value('eyebrow'));
+        $this->assertNotSame($before['hero']['updated_at'], $after['hero']['updated_at']);
+
+        foreach (array_diff(HomepageContent::SECTION_KEYS, ['hero']) as $sectionKey) {
+            $this->assertSame($before[$sectionKey], $after[$sectionKey], "{$sectionKey} should not be touched by out-of-order form payloads.");
+        }
+
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'updated_homepage_sections',
+            'description' => 'Updated homepage page sections: hero',
+        ]);
+    }
+
+    public function test_out_of_order_form_payload_no_op_does_not_touch_any_records(): void
+    {
+        $this->seed(HomePageSectionSeeder::class);
+        $this->setSectionTimestamps('2026-01-01 00:00:00');
+
+        $before = $this->sectionSnapshot();
+        $payload = $this->outOfOrderRepeatedPayload($this->validPayload());
+
+        Carbon::setTestNow('2026-01-01 00:10:00');
+
+        $this->actingAs($this->adminUser(), 'admin')
+            ->put(route('admin.homepage.update'), $payload)
+            ->assertRedirect(route('admin.homepage.edit'))
+            ->assertSessionHas('success', 'Homepage content is already up to date.');
+
+        $this->assertSame($before, $this->sectionSnapshot());
+        $this->assertSame(0, DB::table('activity_logs')->count());
+    }
+
+    public function test_out_of_order_form_payload_still_saves_meaningful_repeated_field_changes(): void
+    {
+        $this->seed(HomePageSectionSeeder::class);
+        $this->setSectionTimestamps('2026-01-01 00:00:00');
+
+        $before = $this->sectionSnapshot();
+        $payload = $this->outOfOrderRepeatedPayload($this->validPayload([
+            'primary_cta.proof_points.2' => 'Updated ROI Proof',
+        ]));
+
+        Carbon::setTestNow('2026-01-01 00:10:00');
+
+        $this->actingAs($this->adminUser(), 'admin')
+            ->put(route('admin.homepage.update'), $payload)
+            ->assertRedirect(route('admin.homepage.edit'))
+            ->assertSessionHas('success', 'Homepage content updated successfully.');
+
+        $after = $this->sectionSnapshot();
+
+        $this->assertNotSame($before['primary_cta']['updated_at'], $after['primary_cta']['updated_at']);
+
+        foreach (array_diff(HomepageContent::SECTION_KEYS, ['primary_cta']) as $sectionKey) {
+            $this->assertSame($before[$sectionKey], $after[$sectionKey], "{$sectionKey} should not be touched.");
+        }
+
+        $primaryCta = PageSection::where('section_key', 'primary_cta')->firstOrFail();
+
+        $this->assertSame('Updated ROI Proof', $primaryCta->payload['proof_points'][2]);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'updated_homepage_sections',
+            'description' => 'Updated homepage page sections: primary_cta',
+        ]);
+    }
+
     public function test_meaningful_zero_values_are_preserved_and_numeric_changes_are_not_hidden(): void
     {
         $this->seed(HomePageSectionSeeder::class);
@@ -527,6 +612,44 @@ class HomepageDirtyUpdateTest extends TestCase
             '/contact' => 'contact',
             default => $fallback,
         };
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function outOfOrderRepeatedPayload(array $payload): array
+    {
+        $payload['hero']['title_lines'] = $this->reorderNumericKeys($payload['hero']['title_lines'], [1, 0, 3, 2]);
+        $payload['hero']['dashboard']['metrics'] = $this->reorderNumericKeys($payload['hero']['dashboard']['metrics'], [2, 0, 1]);
+        $payload['hero']['dashboard']['chart']['days'] = $this->reorderNumericKeys($payload['hero']['dashboard']['chart']['days'], [4, 1, 0, 2, 3, 6, 5]);
+        $payload['hero']['dashboard']['chart']['bar_heights'] = $this->reorderNumericKeys($payload['hero']['dashboard']['chart']['bar_heights'], [4, 1, 0, 2, 3, 6, 5]);
+        $payload['hero']['dashboard']['tracking']['items'] = $this->reorderNumericKeys($payload['hero']['dashboard']['tracking']['items'], [2, 3, 1, 0]);
+        $payload['hero']['dashboard']['floating_badges'] = $this->reorderNumericKeys($payload['hero']['dashboard']['floating_badges'], [1, 0]);
+        $payload['stats']['items'] = $this->reorderNumericKeys($payload['stats']['items'], [1, 2, 0, 3]);
+        $payload['trust_bar']['items'] = $this->reorderNumericKeys($payload['trust_bar']['items'], [6, 5, 0, 1, 4, 2, 3]);
+        $payload['difference']['cards'] = $this->reorderNumericKeys($payload['difference']['cards'], [2, 1, 0]);
+        $payload['services_intro']['card_icons'] = $this->reorderNumericKeys($payload['services_intro']['card_icons'], [1, 0, 2]);
+        $payload['primary_cta']['title_lines'] = $this->reorderNumericKeys($payload['primary_cta']['title_lines'], [1, 0]);
+        $payload['primary_cta']['proof_points'] = $this->reorderNumericKeys($payload['primary_cta']['proof_points'], [3, 1, 0, 2]);
+
+        return $payload;
+    }
+
+    /**
+     * @param array<int, mixed> $items
+     * @param array<int, int> $order
+     * @return array<int, mixed>
+     */
+    private function reorderNumericKeys(array $items, array $order): array
+    {
+        $reordered = [];
+
+        foreach ($order as $index) {
+            $reordered[$index] = $items[$index];
+        }
+
+        return $reordered;
     }
 
     private function adminUser(): AdminUser
