@@ -31,32 +31,43 @@ class HomepageController extends Controller
     public function update(UpdateHomepageRequest $request)
     {
         $sections = $request->homepageData();
+        $changedSectionKeys = [];
 
-        DB::transaction(function () use ($sections) {
+        DB::transaction(function () use ($sections, &$changedSectionKeys) {
             foreach ($sections as $sectionKey => $section) {
-                PageSection::updateOrCreate(
-                    [
-                        'page_key' => 'home',
-                        'section_key' => $sectionKey,
-                    ],
-                    array_merge($section, [
-                        'page_key' => 'home',
-                        'status' => 'active',
-                    ])
-                );
+                $pageSection = PageSection::firstOrNew([
+                    'page_key' => 'home',
+                    'section_key' => $sectionKey,
+                ]);
+
+                $attributes = $this->persistedAttributes($pageSection, array_merge($section, [
+                    'page_key' => 'home',
+                    'status' => 'active',
+                ]));
+
+                $pageSection->fill($attributes);
+
+                if (! $pageSection->exists || $pageSection->isDirty()) {
+                    $pageSection->save();
+                    $changedSectionKeys[] = $sectionKey;
+                }
             }
 
-            ActivityLog::log(
-                'updated_homepage_sections',
-                'PageSection',
-                null,
-                'Updated homepage page sections'
-            );
+            if ($changedSectionKeys !== []) {
+                ActivityLog::log(
+                    'updated_homepage_sections',
+                    'PageSection',
+                    null,
+                    'Updated homepage page sections: ' . implode(', ', $changedSectionKeys)
+                );
+            }
         });
 
         return redirect()
             ->route('admin.homepage.edit')
-            ->with('success', 'Homepage content updated successfully.');
+            ->with('success', $changedSectionKeys === []
+                ? 'Homepage content is already up to date.'
+                : 'Homepage content updated successfully.');
     }
 
     /**
@@ -196,5 +207,76 @@ class HomepageController extends Controller
             '/contact' => 'contact',
             default => $fallback,
         };
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     * @return array<string, mixed>
+     */
+    private function persistedAttributes(PageSection $section, array $attributes): array
+    {
+        if (! $section->exists) {
+            return $attributes;
+        }
+
+        if (
+            array_key_exists('payload', $attributes)
+            && $this->canonicalPayload($section->section_key, $section->payload ?? [])
+                === $this->canonicalPayload($section->section_key, $attributes['payload'] ?? [])
+        ) {
+            $attributes['payload'] = $section->payload;
+        }
+
+        return $attributes;
+    }
+
+    private function canonicalPayload(?string $sectionKey, mixed $payload): mixed
+    {
+        if (! is_array($payload)) {
+            return $payload;
+        }
+
+        $payload = $this->canonicalArray($payload);
+
+        if ($sectionKey === 'stats' && isset($payload['items']) && is_array($payload['items'])) {
+            $payload['items'] = array_map(function (mixed $item): mixed {
+                if (! is_array($item)) {
+                    return $item;
+                }
+
+                if (array_key_exists('sep', $item) && ($item['sep'] === '' || $item['sep'] === null)) {
+                    unset($item['sep']);
+                }
+
+                return $this->canonicalArray($item);
+            }, $payload['items']);
+        }
+
+        return $payload;
+    }
+
+    private function canonicalArray(array $value): array
+    {
+        $canonical = [];
+
+        foreach ($value as $key => $item) {
+            if ($item === null || $item === '') {
+                continue;
+            }
+
+            if (is_array($item)) {
+                $item = $this->canonicalArray($item);
+            } elseif (is_scalar($item)) {
+                $item = (string) $item;
+            }
+
+            $canonical[$key] = $item;
+        }
+
+        if (! array_is_list($canonical)) {
+            ksort($canonical);
+        }
+
+        return $canonical;
     }
 }
